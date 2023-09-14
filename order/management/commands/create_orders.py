@@ -18,7 +18,7 @@ class Command(BaseCommand):
             order = Order()
             order.save()
             for j in range(random.randint(-5, 5)):
-                if j < 0:
+                if j < 0:  # randomize the number of order status
                     break
                 status = random.choice(OrderStatus.Status.choices)[0]
                 created = timezone.now() - timezone.timedelta(days=random.randint(0, 1000))
