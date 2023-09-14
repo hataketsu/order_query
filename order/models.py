@@ -2,8 +2,32 @@ from django.db import models
 from django.utils import timezone
 
 
+class OrderManager(models.Manager):
+    def canceled(self):
+        return self.annotate(
+            latest_status=models.Subquery(OrderStatus.objects.filter(
+                order=models.OuterRef('pk')
+            ).order_by('-created').values('status')[:1])
+        ).filter(latest_status=OrderStatus.Status.CANCELED)
+
+    def pending(self):
+        return self.annotate(
+            latest_status=models.Subquery(
+                OrderStatus.objects.filter(order=models.OuterRef('pk')).order_by('-created').values('status')[:1]
+            )
+        ).filter(latest_status=OrderStatus.Status.PENDING)
+
+    def complete(self):
+        return self.annotate(
+            latest_status=models.Subquery(
+                OrderStatus.objects.filter(order=models.OuterRef('pk')).order_by('-created').values('status')[:1]
+            )
+        ).filter(latest_status=OrderStatus.Status.COMPLETE)
+
+
 class Order(models.Model):
     pass
+    objects = OrderManager()
 
 
 class OrderStatus(models.Model):
